@@ -26,28 +26,27 @@ class Email {
   public static void main(String[] argv) throws Exception {
 
     Socket clientSocket = null;
-    String recipient = "";
-    String subject = "";
-    String message = "";
-    String sender = "";
-
-    System.out.print("Enter sender of message: ");
     BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-    sender = inFromUser.readLine();
+    System.out.print("Enter sender of message: ");
+    final String sender = inFromUser.readLine();
 
     System.out.print("Enter recipient of message: ");
-    recipient = inFromUser.readLine();
+    final String recipient = inFromUser.readLine();
 
+    System.out.print("Enter subject of message: ");
+     final String subject = inFromUser.readLine();
+
+    String message = "";
     boolean boole = true;
     while (boole) {
-      System.out.println("Enter one line of message: ");
-      message += inFromUser.readLine() + '\n';
-      System.out.println("Enter another line? (y/n)");
-      int n = inFromUser.read();
-      if (n != 121 && n != 89) {
+      System.out.println("Enter message: (append last line of your message with two stars **)");
+      String temp = "";
+      temp = inFromUser.readLine();
+      if (temp.charAt(temp.length() - 1) == '*' && temp.charAt(temp.length() - 2) == '*') {
+        temp = temp.substring(0,temp.length() - 2);
         boole = false;
       }
-      inFromUser.readLine();
+      message = message + temp + '\n';
     }
     inFromUser.close();
     message += ".\r\n";
@@ -60,39 +59,38 @@ class Email {
     PrintWriter outToServer = new PrintWriter(clientSocket.getOutputStream(),true);
     BufferedReader inFromServer =  new BufferedReader(
         new InputStreamReader(clientSocket.getInputStream()));
-
     outToServer.println("HELO icd.chapman.edu");
-    System.out.println("Client: HELO llb16.chapman.edu");
+    System.out.println("Client: HELO icd.chapman.edu");
     String response = inFromServer.readLine();
-    System.out.println("FROM SERVER: " + response);
+    System.out.println("Server: " + response);
 
     outToServer.println("MAIL FROM: " + sender);
-    System.out.println("Client: sent cmd line: MAIN FROM: " + sender);
+    System.out.println("Client: MAIL FROM: " + sender);
 
     response = inFromServer.readLine();
-    System.out.println("FROM SERVER: " + response);
+    System.out.println("Server: " + response);
 
     outToServer.println("RCPT TO: " + recipient);
     System.out.println("Client: RCPT TO: " + recipient);
 
     response = inFromServer.readLine();
-    System.out.println("FROM SERVER: " + sender);
+    System.out.println("Server: " + response);
 
-    System.out.println("Client: DATA\nsent cmd line " + message);
+    System.out.println("client: DATA");
     outToServer.println("DATA");
-
     response = inFromServer.readLine();
-    System.out.println("FROM SERVER: " + response);
-
+    System.out.println("Server: " + response);
+    message = "To: " + recipient + "\nFrom: " + sender + "\nSubject: " + subject + "\n" + message;
+    System.out.println("Client: \n" + message);
     outToServer.print(message);
     response = inFromServer.readLine();
-    System.out.println("FROM SERVER: " + response);
+    System.out.println("Server: " + response);
 
     outToServer.println("QUIT");
     System.out.println("Client: QUIT");
 
     response = inFromServer.readLine();
-    System.out.println("FROM SERVER: " + response);
+    System.out.println("Server: " + response);
 
     inFromUser.close();
     clientSocket.close();
